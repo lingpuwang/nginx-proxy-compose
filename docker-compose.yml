@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  proxy:
+    container_name: nginx-proxy
+    image: jwilder/nginx-proxy:latest
+    environment:
+      DEFAULT_HOST: ${DEFAULT_HOST}
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/nginx/certs
+      - /etc/nginx/vhost.d
+      - /usr/share/nginx/html
+    ports:
+      - ${APP_PORT:-80}:80
+      - 443:443
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion:latest
+    environment:
+      DEFAULT_EMAIL: ${DEFAULT_EMAIL}
+    restart: always
+    volumes_from:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/acme.sh
